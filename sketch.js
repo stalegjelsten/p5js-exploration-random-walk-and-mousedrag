@@ -1,5 +1,5 @@
-const numBubbles = 20;
-const history = 1000;
+const numBubbles = 10;
+const history = 300;
 const randomMoveDistance = 2;
 const drawTail = true;
 const minCircleSize = 10;
