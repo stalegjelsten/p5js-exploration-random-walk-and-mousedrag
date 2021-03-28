@@ -107,3 +107,14 @@ function mouseReleased() {
     bubbles[i].circleReleased();
   }
 }
+function touchStarted() {
+  for (let i = 0; i < numBubbles; i++) {
+    bubbles[i].circleClicked();
+  }
+}
+
+function touchEnded() {
+  for (let i = 0; i < numBubbles; i++) {
+    bubbles[i].circleReleased();
+  }
+}
