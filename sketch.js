@@ -1,17 +1,24 @@
 const numBubbles = 10;
 const history = 300;
-const randomSpeed = 0.5;
+const randomSpeed = 1.5;
 const drawTail = false;
 const minCircleSize = 5;
 const maxCircleSize = 10;
+const playerAdvantage = 1.50;
+const humanFace = "🐵"; //single character emoji to represent human player
 let idNum = 0;
 let bubbles = [];
+let player;
+let frame = 60;
 
 function setup() {
   ellipseMode(RADIUS);
-  frameRate(60);
   createCanvas(350, 500);
-  for (let i = 0; i < numBubbles; i++) {
+  createSpan("Adjust framerate from 5–60 FPS: ")
+  frameSlider = createSlider(5, 60, 60, 5);
+  player = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
+  bubbles[0] = player;
+  for (let i = 1; i < numBubbles; i++) {
     stroke(255);
     bubbles[i] = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
   }
@@ -19,6 +26,8 @@ function setup() {
 
 function draw() {
   background(20);
+  frameRate(frame);
+  frame = frameSlider.value();
   for (let i = 0; i < bubbles.length; i++) {
     bubbles[i].move();
     bubbles[i].over();
@@ -44,6 +53,10 @@ class Bubble {
     this.dragging = false;
     this.rollover = false;
     this.history = [];
+    if (idNum == 0) {
+      // growing the human player an advantage to make fewer unwinnable rounds
+      this.r = this.r * playerAdvantage;
+    }
     idNum++;
   }
 
@@ -56,13 +69,27 @@ class Bubble {
 
     if (this.x + this.r > width) {
       this.x = width - this.r;
-    } else if (this.x - this.r < 0) {
+    } else if (this.x - this.r < 0) {
       this.x = this.r;
     }
     if (this.y + this.r > height) {
       this.y = height - this.r;
     } else if (this.y - this.r < 0) {
       this.y = this.r;
+    }
+
+    if (keyIsDown(UP_ARROW)) {
+      player.vy += 0.001;
+      player.r -= 0.003;
+    } else if (keyIsDown(DOWN_ARROW)) {
+      player.vy -= 0.001;
+      player.r -= 0.003;
+    } else if (keyIsDown(LEFT_ARROW)) {
+      player.vx += 0.001;
+      player.r -= 0.003;
+    } else if (keyIsDown(RIGHT_ARROW)) {
+      player.vx -= 0.001;
+      player.r -= 0.003;
     }
 
     this.history.push(createVector(this.x, this.y));
@@ -84,11 +111,18 @@ class Bubble {
     stroke(200);
     if (this.rollover === true) {
       fill(min(this.cr * 2, 255), min(this.cg * 2, 255), min(this.cb * 2, 255));
+    } else if (this.id == 0) {
+      fill(255, 0, 0);
     } else {
       fill(this.cr, this.cg, this.cb);
     }
     ellipse(this.x, this.y, this.r);
     stroke(0);
+    if (this.id == 0) {
+      textAlign(CENTER,CENTER)
+      textSize(this.r - 1)
+      text(humanFace, this.x,this.y);
+    }
     fill(0);
 
     if (drawTail) {
@@ -111,8 +145,8 @@ class Bubble {
         if (d < this.r + bubble.r) {
           if (this.r > bubble.r) {
             const deltaR = sqrt(abs(this.r + bubble.r - d));
-            const deceleration = deltaR / this.r;
-            console.log(deceleration);  
+            const deceleration = (deltaR / this.r) ** 2;
+            console.log(deceleration);
             this.vx = this.vx * (1 - deceleration);
             this.vy = this.vy * (1 - deceleration);
             this.r += deltaR;
