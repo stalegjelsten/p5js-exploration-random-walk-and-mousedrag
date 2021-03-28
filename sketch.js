@@ -60,7 +60,8 @@ class Bubble {
     }
     ellipse(this.x, this.y, this.r);
     if (drawTail) {
-      beginShape(LINES);
+      beginShape();
+      noFill();
       for (let i = 0; i < this.history.length; i++) {
         vertex(this.history[i].x, this.history[i].y);
       }
@@ -80,7 +81,7 @@ class Bubble {
   }
 
   circleClicked() {
-    if (this.rollover == true) {
+    if ((mouseX - this.x) ** 2 + (mouseY - this.y) ** 2 < this.r ** 2) {
       this.dragging = true;
       this.newx = mouseX;
       this.newy = mouseY;
