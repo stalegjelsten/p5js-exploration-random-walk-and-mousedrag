@@ -1,7 +1,5 @@
 const numBubbles = 10;
-const history = 300;
-const randomSpeed = 1;
-const drawTail = false;
+const randomSpeed = 2;
 const minCircleSize = 5;
 const maxCircleSize = 10;
 const playerAdvantage = 1.50;
@@ -9,7 +7,7 @@ const humanFace = "🐵"; //single character emoji to represent human player
 let idNum = 0;
 let bubbles = [];
 let player;
-let frame = 60;
+let frame = 30;
 let frameSlider;
 let resetButton;
 
@@ -17,7 +15,7 @@ function setup() {
   ellipseMode(RADIUS);
   createCanvas(350, 500);
   createSpan("Juster hastigheten: ")
-  frameSlider = createSlider(5, 60, 60, 5);
+  frameSlider = createSlider(5, 60, frame, 5);
   createDiv(" ")
   resetButton = createButton("Start på nytt")
   resetButton.mousePressed(resetSketch);
@@ -51,7 +49,6 @@ class Bubble {
     this.newy = y;
     this.dragging = false;
     this.rollover = false;
-    this.history = [];
     if (idNum == 0) {
       // growing the human player an advantage to make fewer unwinnable rounds
       this.r = random(minCircleSize * playerAdvantage, maxCircleSize);
@@ -62,7 +59,6 @@ class Bubble {
   move() {
     if (this.r < 3) {
       const index = bubbles.indexOf(this);
-      console.log("Deleted " + this.id);
       bubbles.splice(index, 1);
     }
 
@@ -78,8 +74,6 @@ class Bubble {
     }
     if (mouseIsPressed) {
       let mousePlayerVector = createVector(player.x, player.y).sub(mouseX, mouseY);
-
-      console.log(mousePlayerVector);
 
       player.vx += mousePlayerVector.x * 4e-5;
       player.vy += mousePlayerVector.y * 4e-5;
@@ -100,7 +94,6 @@ class Bubble {
       player.r -= 0.003;
     }
 
-    this.history.push(createVector(this.x, this.y));
     this.x = this.x + this.vx;
     this.y = this.y + this.vy;
     if ((this.x + this.r) > width || (this.x - this.r) < 0) {
@@ -108,10 +101,6 @@ class Bubble {
     }
     if ((this.y + this.r) > height || (this.y - this.r) < 0) {
       this.vy = -this.vy;
-    }
-    if (this.dragging === true) {
-      this.x = mouseX;
-      this.y = mouseY;
     }
   }
 
@@ -132,18 +121,6 @@ class Bubble {
       text(humanFace, this.x,this.y);
     }
     fill(0);
-
-    if (drawTail) {
-      beginShape();
-      noFill();
-      for (let i = 0; i < this.history.length; i++) {
-        vertex(this.history[i].x, this.history[i].y);
-      }
-      endShape();
-    }
-    if (this.history.length > history) {
-      this.history.shift();
-    }
   }
 
   computeCollisions() {
@@ -154,19 +131,16 @@ class Bubble {
           if (this.r > bubble.r) {
             const deltaR = sqrt(abs(this.r + bubble.r - d));
             const deceleration = (deltaR / this.r) ** 2;
-            console.log(deceleration);
             this.vx = this.vx * (1 - deceleration);
             this.vy = this.vy * (1 - deceleration);
             this.r += deltaR;
             if (bubble.r < 3) {
-              console.log("Deleted " + bubble.id);
               const index = bubbles.indexOf(bubble);
               bubbles.splice(index, 1);
             }
           } else {
             this.r -= sqrt(abs(this.r + bubble.r - d));
             if (this.r < 3) {
-              console.log("Deleted " + this.id);
               const index = bubbles.indexOf(this);
               bubbles.splice(index, 1);
             }
