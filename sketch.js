@@ -1,7 +1,7 @@
 const numBubbles = 10;
 const randomSpeed = 2;
 const minCircleSize = 5;
-const maxCircleSize = 10;
+const maxCircleSize = 21;
 const playerAdvantage = 1.50;
 const humanFace = "🐵"; //single character emoji to represent human player
 let idNum = 0;
