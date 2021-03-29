@@ -51,7 +51,7 @@ class Bubble {
     this.rollover = false;
     if (idNum == 0) {
       // growing the human player an advantage to make fewer unwinnable rounds
-      this.r = random(minCircleSize * playerAdvantage, maxCircleSize);
+      this.r = random(minCircleSize * playerAdvantage, maxCircleSize + 2);
     }
     idNum++;
   }
@@ -155,6 +155,7 @@ class Bubble {
 function checkWinner() {
   if (bubbles.length == 1 && bubbles[0].id == 0) {
     fill(220);
+    textSize(32);
     text("Gratulerer!! 🥳", width/2, height/2);
   }
 }
