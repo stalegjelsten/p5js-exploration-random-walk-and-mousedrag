@@ -1,6 +1,6 @@
 const numBubbles = 10;
 const history = 300;
-const randomSpeed = 1;
+const randomSpeed = 1.5;
 const drawTail = false;
 const minCircleSize = 5;
 const maxCircleSize = 10;
@@ -10,18 +10,18 @@ let idNum = 0;
 let bubbles = [];
 let player;
 let frame = 60;
-let frameSlider;
-let resetButton;
 
 function setup() {
   ellipseMode(RADIUS);
   createCanvas(350, 500);
-  createSpan("Juster hastigheten: ")
+  createSpan("Adjust framerate from 5–60 FPS: ")
   frameSlider = createSlider(5, 60, 60, 5);
-  createDiv(" ")
-  resetButton = createButton("Start på nytt")
-  resetButton.mousePressed(resetSketch);
-  resetSketch();
+  player = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
+  bubbles[0] = player;
+  for (let i = 1; i < numBubbles; i++) {
+    stroke(255);
+    bubbles[i] = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
+  }
 }
 
 function draw() {
@@ -30,10 +30,11 @@ function draw() {
   frame = frameSlider.value();
   for (let i = 0; i < bubbles.length; i++) {
     bubbles[i].move();
+    bubbles[i].over();
     bubbles[i].display();
     bubbles[i].computeCollisions();
   }
-  checkWinner();
+  // noLoop();
 }
 
 class Bubble {
@@ -54,7 +55,7 @@ class Bubble {
     this.history = [];
     if (idNum == 0) {
       // growing the human player an advantage to make fewer unwinnable rounds
-      this.r = random(minCircleSize * playerAdvantage, maxCircleSize);
+      this.r = this.r * playerAdvantage;
     }
     idNum++;
   }
@@ -75,15 +76,6 @@ class Bubble {
       this.y = height - this.r;
     } else if (this.y - this.r < 0) {
       this.y = this.r;
-    }
-    if (mouseIsPressed) {
-      let mousePlayerVector = createVector(player.x, player.y).sub(mouseX, mouseY);
-
-      console.log(mousePlayerVector);
-
-      player.vx += mousePlayerVector.x * 4e-5;
-      player.vy += mousePlayerVector.y * 4e-5;
-      player.r -= 0.003;
     }
 
     if (keyIsDown(UP_ARROW)) {
@@ -176,28 +168,49 @@ class Bubble {
     }
   }
 
+  over() {
+    if ((mouseX - this.x) ** 2 + (mouseY - this.y) ** 2 < this.r ** 2) {
+      this.rollover = true;
+    } else {
+      this.rollover = false;
+    }
+  }
+
+  circleClicked() {
+    if ((mouseX - this.x) ** 2 + (mouseY - this.y) ** 2 < this.r ** 2) {
+      this.dragging = true;
+      this.newx = mouseX;
+      this.newy = mouseY;
+    } else {
+      this.dragging = false;
+    }
+  }
+
+  circleReleased() {
+    this.dragging = false;
+  }
+
 }
 
-function checkWinner() {
-  if (bubbles.length == 1 && bubbles[0].id == 0) {
-    fill(220);
-    text("Gratulerer!! 🥳", width/2, height/2);
+function mousePressed() {
+  for (let i = 0; i < bubbles.length; i++) {
+    bubbles[i].circleClicked();
   }
 }
 
-function resetSketch() {
-  idNum = 0;
-  bubbles = [];
-  player = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
-  bubbles[0] = player;
-  for (let i = 1; i < numBubbles; i++) {
-    stroke(255);
-    bubbles[i] = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
+function mouseReleased() {
+  for (let i = 0; i < bubbles.length; i++) {
+    bubbles[i].circleReleased();
+  }
+}
+function touchStarted() {
+  for (let i = 0; i < bubbles.length; i++) {
+    bubbles[i].circleClicked();
   }
 }
 
-function keyPressed() {
-  if (key == "r") {
-    resetSketch();
+function touchEnded() {
+  for (let i = 0; i < bubbles.length; i++) {
+    bubbles[i].circleReleased();
   }
 }
