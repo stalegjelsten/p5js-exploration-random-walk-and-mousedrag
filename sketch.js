@@ -4,6 +4,7 @@ const minCircleSize = 5;
 const maxCircleSize = 21;
 const playerAdvantage = 1.50;
 const humanFace = "🐵"; //single character emoji to represent human player
+const golden = 1.61803398875;
 let idNum = 0;
 let bubbles = [];
 let player;
@@ -42,13 +43,9 @@ class Bubble {
     this.vx = random(-randomSpeed, randomSpeed);
     this.vy = random(-randomSpeed, randomSpeed);
     this.r = random(minCircleSize, maxCircleSize);
-    this.cr = random(255);
-    this.cg = random(255);
-    this.cb = random(255);
+    this.h = (random() + golden) % 1
     this.newx = x;
     this.newy = y;
-    this.dragging = false;
-    this.rollover = false;
     if (idNum == 0) {
       // growing the human player an advantage to make fewer unwinnable rounds
       this.r = random(minCircleSize * playerAdvantage, maxCircleSize + 2);
@@ -77,22 +74,27 @@ class Bubble {
 
       player.vx += mousePlayerVector.x * 4e-5;
       player.vy += mousePlayerVector.y * 4e-5;
-      player.r -= 0.003;
+      reduceSize();
     }
 
     if (keyIsDown(UP_ARROW)) {
       player.vy += 0.001;
-      player.r -= 0.003;
+      reduceSize();
     } else if (keyIsDown(DOWN_ARROW)) {
       player.vy -= 0.001;
-      player.r -= 0.003;
+      reduceSize();
     } else if (keyIsDown(LEFT_ARROW)) {
       player.vx += 0.001;
-      player.r -= 0.003;
+      reduceSize();
     } else if (keyIsDown(RIGHT_ARROW)) {
       player.vx -= 0.001;
-      player.r -= 0.003;
+      reduceSize();
     }
+
+    function reduceSize() {
+      player.r *= 0.999;
+    }
+    
 
     this.x = this.x + this.vx;
     this.y = this.y + this.vy;
@@ -111,7 +113,9 @@ class Bubble {
     } else if (this.id == 0) {
       fill(255, 0, 0);
     } else {
-      fill(this.cr, this.cg, this.cb);
+      colorMode(HSB, 1);
+      fill(this.h, 0.5, 0.99);
+      colorMode(RGB);
     }
     ellipse(this.x, this.y, this.r);
     stroke(0);
@@ -166,7 +170,6 @@ function resetSketch() {
   player = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
   bubbles[0] = player;
   for (let i = 1; i < numBubbles; i++) {
-    stroke(255);
     bubbles[i] = new Bubble(random(maxCircleSize, width - maxCircleSize), random(maxCircleSize, height - maxCircleSize));
   }
 }
